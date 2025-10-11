@@ -1,0 +1,30 @@
+# Byte-compiled / caches
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# PyCharm/IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter / data
+.ipynb_checkpoints/
+*.sqlite
+*.db
+
+# Builds
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
