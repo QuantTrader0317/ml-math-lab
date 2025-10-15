@@ -17,6 +17,7 @@ Everything here was written, debugged, and explained line by line inside **PyCha
 | 4 | **k-Means Clustering** | Unsupervised Learning | Distance Metrics & Iterative Refinement |
 | 5 | **Principal Component Analysis (PCA)** | Dimensionality Reduction | SVD, Variance, & Reconstruction |
 | 6 | **Regularized Regression (Ridge & Lasso)** | Overfitting Control | L2 & L1 Penalties, Feature Selection |
+| 7 | **Optimizer Comparison (SGD • Momentum • Adam)** | Optimization Algorithms | Convergence Speed & Stability |
 
 ---
 
@@ -44,6 +45,11 @@ Everything here was written, debugged, and explained line by line inside **PyCha
 - **k-Means:** patterns form through repeated nearest-center updates  
 - **PCA:** you can compress data while keeping most of its meaning  
 - **Ridge & Lasso:** adding penalties keeps models stable and highlights the most important features  
+- **Optimizers (SGD vs Momentum vs Adam):** All train the same logistic model differently.  
+  - SGD → simple but noisy steps  
+  - Momentum → adds velocity for smoother progress  
+  - Adam → adapts learning rate per weight, usually fastest and most stable  
+  These control *how models actually learn*, which is crucial for larger ML & quant research systems.
 
 ---
 
