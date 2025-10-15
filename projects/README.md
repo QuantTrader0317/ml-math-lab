@@ -18,6 +18,8 @@ Everything here was written, debugged, and explained line by line inside **PyCha
 | 5 | **Principal Component Analysis (PCA)** | Dimensionality Reduction | SVD, Variance, & Reconstruction |
 | 6 | **Regularized Regression (Ridge & Lasso)** | Overfitting Control | L2 & L1 Penalties, Feature Selection |
 | 7 | **Optimizer Comparison (SGD • Momentum • Adam)** | Optimization Algorithms | Convergence Speed & Stability |
+| 8 | **Time-Series Analysis (Stationarity & Autocorrelation)** | Statistical Properties of Market Data | ADF Tests, ACF, Ljung–Box, AR(1) Model |
+| 9 | **Feature Engineering for Returns** | Quant Signal Design | Momentum, Volatility, Z-Scores, Rolling Beta, Lagged Returns |
 
 ---
 
@@ -50,6 +52,10 @@ Everything here was written, debugged, and explained line by line inside **PyCha
   - Momentum → adds velocity for smoother progress  
   - Adam → adapts learning rate per weight, usually fastest and most stable  
   These control *how models actually learn*, which is crucial for larger ML & quant research systems.
+- **Time-Series Analysis:** Prices are non-stationary (random-walk behavior); returns are stationary.  
+  Weak negative autocorrelation indicates short-term mean reversion — a foundation for quant forecasting.  
+- **Feature Engineering for Returns:** Built momentum, volatility, z-score, beta, and lagged-return features.  
+  Individually weak but collectively form the basis of a multi-factor predictive signal.
 
 ---
 
@@ -87,7 +93,9 @@ ml-math-lab/
 │ ├── 4_kmeans_scratch.py
 │ ├── 5_pca_svd.py
 │ └── 6_regularized_regression.py
-│
+│ └── 7_optimizers_logreg.py
+│ └── 8_time_series_basics.py
+│ └── 9_feature_engineering_returns.py
 ├── README.md ← this file
 └── requirements.txt
 
