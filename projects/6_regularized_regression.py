@@ -1,43 +1,43 @@
 """
-Project 6 - Regularized Regression (Ridge & Lasso)
-Python 3.13-safe. Numpy 2.1+
+Project 6 — Regularized Regression (Ridge & Lasso)
+Python 3.13-safe. NumPy 2.1+.
 
 What this does:
 - Generates a regression dataset with correlated features
 - Implements Ridge (closed-form) and Lasso (coordinate descent)
-- Compare to scikit-learn Ridge/Lasso
+- Compares to scikit-learn Ridge/Lasso
 - Runs a small hyperparameter sweep over lambda and prints R^2 + coefficients
 """
 
 import numpy as np
 from sklearn.linear_model import Ridge as SKRidge, Lasso as SKLasso
 from sklearn.metrics import r2_score
-from numpy.linalg import inv
 
-# -----------------
+# -------------------------
 # Utilities
-# -----------------
-
+# -------------------------
 def add_bias(X: np.ndarray) -> np.ndarray:
     return np.c_[np.ones((X.shape[0], 1)), X]
 
 def standardize(X: np.ndarray):
     """
-    Standardize columns (mean 0, std 1). Returns Xz, means, stds.
-    Regularization is more stable/fair when features are on the same scale.
+    Standardize columns (mean 0, std 1). Returns:
+      Xz (standardized), means, stds_safe
+    Using distinct names to avoid any scope/alias issues.
     """
     mu = X.mean(axis=0, keepdims=True)
-    std = X.std(axis=0, ddof=1, keepdims=True)
-    sd = np.where(sd == 0, 1.0, sd)
-    return (X - mu) / sd, mu, sd
+    stds = X.std(axis=0, ddof=1, keepdims=True)
+    stds_safe = np.where(stds == 0, 1.0, stds)
+    Xz = (X - mu) / stds_safe
+    return Xz, mu, stds_safe
 
-def unstandardize_beta(beta_z: np.ndarray, mu: np.ndarray, sd: np.ndarray):
+def unstandardize_beta(beta_z: np.ndarray, mu: np.ndarray, stds_safe: np.ndarray):
     """
     Convert coefficients learned on standardized features back to original scale.
     beta_z is [b0, b1, ..., bd] for standardized X; return [b0_orig, b1_orig, ...].
     """
-    b0 = beta_z[0] - np.sum((beta_z[1:] * (mu.flatten() / sd.flatten())))
-    bj = beta_z[1:] / sd.flatten()
+    b0 = beta_z[0] - np.sum((beta_z[1:] * (mu.flatten() / stds_safe.flatten())))
+    bj = beta_z[1:] / stds_safe.flatten()
     return np.r_[b0, bj]
 
 # -------------------------
@@ -45,17 +45,20 @@ def unstandardize_beta(beta_z: np.ndarray, mu: np.ndarray, sd: np.ndarray):
 # -------------------------
 def ridge_closed_form(X: np.ndarray, y: np.ndarray, lam: float) -> np.ndarray:
     """
-    Ridge with intercept: we standardize X (not y), fit ridge on [1, Xz],
+    Ridge with intercept: standardize X (not y), fit ridge on [1, Xz],
     then un-standardize coefficients to original X scale.
     """
-    Xz, mu, sd = standardize(X)
+    Xz, mu, stds_safe = standardize(X)
     Xb = add_bias(Xz)
-    # no penalty on the bias term → build penalty matrix with 0 in top-left
     d = Xb.shape[1]
+
+    # penalty matrix: no penalty on the bias term
     I = np.eye(d)
     I[0, 0] = 0.0
-    beta_z = inv(Xb.T @ Xb + lam * I) @ (Xb.T @ y)
-    beta_orig = unstandardize_beta(beta_z, mu, sd)
+
+    # Use solve (more stable than explicit inverse)
+    beta_z = np.linalg.solve(Xb.T @ Xb + lam * I, Xb.T @ y)
+    beta_orig = unstandardize_beta(beta_z, mu, stds_safe)
     return beta_orig
 
 # -------------------------
@@ -69,42 +72,40 @@ def soft_threshold(z: float, g: float) -> float:
         return z + g
     return 0.0
 
-def lasso_coordinate_descent(X: np.ndarray, y: np.ndarray, lam: float,
-                             max_iter: int = 5000, tol: float = 1e-6, verbose=False, seed=0) -> np.ndarray:
+def lasso_coordinate_descent(
+    X: np.ndarray, y: np.ndarray, lam: float,
+    max_iter: int = 5000, tol: float = 1e-6, verbose: bool = False, seed: int = 0
+) -> np.ndarray:
     """
     Lasso with intercept via coordinate descent on standardized X (no penalty on intercept).
     We standardize X, fit, then unstandardize back to original scale.
     """
     rng = np.random.default_rng(seed)
-    Xz, mu, sd = standardize(X)
+    Xz, mu, stds_safe = standardize(X)
     n, d = Xz.shape
-    # add bias
-    Xb = add_bias(Xz)  # shape (n, d+1); columns: [1, Xz]
-    w = np.zeros(d + 1)  # [bias, w1, ..., wd]
+    Xb = add_bias(Xz)  # [1, Xz]
+    w = np.zeros(d + 1)  # [bias, w1..wd]
 
     # Precompute column norms for speed (ignore bias col)
-    col_norm2 = np.sum(Xz ** 2, axis=0)  # length d
-
-    lam2 = lam / n  # average loss formulation
+    col_norm2 = np.sum(Xz ** 2, axis=0)
+    lam_bar = lam / n  # average loss form
 
     prev_w = w.copy()
     for it in range(max_iter):
         # --- update bias (no penalty) ---
-        # residual with current weights
         r = y - Xb @ w
-        # optimal bias is mean of residual added to current bias
         w[0] += r.mean()
 
-        # --- update each coefficient with soft-thresholding ---
+        # --- update coefficients one by one ---
+        # Residual excluding feature j (coordinate descent trick)
         for j in range(d):
-            # remove current feature contribution from residual
-            r = y - (w[0] + (Xz @ w[1:])) + Xz[:, j] * w[1 + j]
-            rho_j = np.dot(Xz[:, j], r)  # correlation term
-            # coordinate update with soft-thresholding
+            # current partial residual for feature j
+            r = y - (w[0] + Xz @ w[1:]) + Xz[:, j] * w[1 + j]
+            rho_j = float(Xz[:, j] @ r)
             if col_norm2[j] == 0:
                 w[1 + j] = 0.0
             else:
-                w[1 + j] = soft_threshold(rho_j, lam2) / col_norm2[j]
+                w[1 + j] = soft_threshold(rho_j, lam_bar) / col_norm2[j]
 
         # stopping check
         if np.linalg.norm(w - prev_w, ord=2) < tol:
@@ -113,8 +114,7 @@ def lasso_coordinate_descent(X: np.ndarray, y: np.ndarray, lam: float,
             break
         prev_w = w.copy()
 
-    # unstandardize to original X scale
-    beta_orig = unstandardize_beta(w, mu, sd)
+    beta_orig = unstandardize_beta(w, mu, stds_safe)
     return beta_orig
 
 # -------------------------
@@ -173,7 +173,6 @@ if __name__ == "__main__":
 
         print(f"{lam:.2f}\t{r2_lasso:.4f}\t\t{r2_skl:.4f}\t\t{np.round(beta_lasso,3)}\t{np.round(beta_skl,3)}")
 
-    # Short takeaway
     print("\nNote:")
     print("- Ridge shrinks coefficients smoothly as lambda increases (none go exactly to zero).")
     print("- Lasso pushes some coefficients to exactly zero as lambda grows (feature selection).")
