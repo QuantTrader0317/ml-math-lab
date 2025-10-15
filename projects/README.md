@@ -20,6 +20,7 @@ Everything here was written, debugged, and explained line by line inside **PyCha
 | 7 | **Optimizer Comparison (SGD • Momentum • Adam)** | Optimization Algorithms | Convergence Speed & Stability |
 | 8 | **Time-Series Analysis (Stationarity & Autocorrelation)** | Statistical Properties of Market Data | ADF Tests, ACF, Ljung–Box, AR(1) Model |
 | 9 | **Feature Engineering for Returns** | Quant Signal Design | Momentum, Volatility, Z-Scores, Rolling Beta, Lagged Returns |
+| 10 | **Backtesting Engine (Walk-Forward)** | Signal Evaluation & Risk Metrics | PnL Simulation, Sharpe, CAGR, Drawdown, Costs |
 
 ---
 
@@ -56,6 +57,8 @@ Everything here was written, debugged, and explained line by line inside **PyCha
   Weak negative autocorrelation indicates short-term mean reversion — a foundation for quant forecasting.  
 - **Feature Engineering for Returns:** Built momentum, volatility, z-score, beta, and lagged-return features.  
   Individually weak but collectively form the basis of a multi-factor predictive signal.
+- **Backtesting Engine:** Converts features into live-style trades with transaction costs and walk-forward training.  
+  Demonstrated realistic Sharpe / drawdown behavior and set the base for multi-asset portfolio construction.
 
 ---
 
@@ -102,13 +105,8 @@ ml-math-lab/
 ---
 
 ### ✅ Next Step Ideas
-- **Project 7:** Optimizers (SGD, Momentum, Adam)  
-- **Project 8:** Time-Series Basics for Returns  
-- **Project 9:** Feature Engineering for Quant Signals  
-- **Project 10:** Backtester with Transaction Costs  
-- **Project 11:** Portfolio Construction (Ridge/Volatility Targeting)  
-- **Project 12:** Broker API Integration (Paper Trading)  
-- **Project 13:** Risk & Monitoring Dashboard  
+  
+ 
 
 ---
 
