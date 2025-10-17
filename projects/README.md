@@ -21,6 +21,7 @@ Everything here was written, debugged, and explained line by line inside **PyCha
 | 8 | **Time-Series Analysis (Stationarity & Autocorrelation)** | Statistical Properties of Market Data | ADF Tests, ACF, Ljung–Box, AR(1) Model |
 | 9 | **Feature Engineering for Returns** | Quant Signal Design | Momentum, Volatility, Z-Scores, Rolling Beta, Lagged Returns |
 | 10 | **Backtesting Engine (Walk-Forward)** | Signal Evaluation & Risk Metrics | PnL Simulation, Sharpe, CAGR, Drawdown, Costs |
+| 11 | **Portfolio Construction (Multi-Asset)** | Mean–Variance + Risk Control | Ridge α, Shrunk Σ, Vol Targeting, Costs |
 
 ---
 
@@ -59,6 +60,9 @@ Everything here was written, debugged, and explained line by line inside **PyCha
   Individually weak but collectively form the basis of a multi-factor predictive signal.
 - **Backtesting Engine:** Converts features into live-style trades with transaction costs and walk-forward training.  
   Demonstrated realistic Sharpe / drawdown behavior and set the base for multi-asset portfolio construction.
+- **Portfolio Construction:** Combined per-asset alphas with a ridge-shrunk covariance to get stable mean–variance weights,
+  then scaled the whole book to a fixed annualized volatility (vol targeting). Result: controlled drawdowns and a realistic,
+  leak-free portfolio loop ready to connect to a broker/paper trader.
 
 ---
 
